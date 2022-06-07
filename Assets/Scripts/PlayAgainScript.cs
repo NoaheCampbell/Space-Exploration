@@ -2,15 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayAgainScript : MonoBehaviour
 {
-    
 
     // Start is called before the first frame update
     void Start()
     {
-       
 
     }
 
@@ -18,12 +17,19 @@ public class PlayAgainScript : MonoBehaviour
     void Update()
     {
 
-        
     }
 
-    public void PlayAgain()
+    public void StartGame()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        Destroy(transform.parent.gameObject);
-    }
+        if(SceneManager.GetActiveScene().name == "GameOver")
+        {
+            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        }
+        else
+        {
+            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        }
+
+        Resources.UnloadUnusedAssets();
+    }    
 }

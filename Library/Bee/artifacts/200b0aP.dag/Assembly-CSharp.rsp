@@ -308,6 +308,7 @@
 "Assets/Scripts/CameraMovement.cs"
 "Assets/Scripts/EnemyMovement.cs"
 "Assets/Scripts/EnemyMovementPatterns.cs"
+"Assets/Scripts/EnemyScript.cs"
 "Assets/Scripts/LaserScript.cs"
 "Assets/Scripts/PlayAgainScript.cs"
 "Assets/Scripts/PlayerMovement.cs"

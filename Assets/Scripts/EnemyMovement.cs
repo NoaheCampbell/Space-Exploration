@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyMovement : MonoBehaviour
 {
@@ -47,7 +48,7 @@ public class EnemyMovement : MonoBehaviour
         _sidewaysSpeed = localVelocity.x;
 
         // Creates 100 raycasts checking to see if the player is nearby
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 200; i++)
         {
             RaycastHit hit;
             Vector3 rayDirection = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
@@ -94,7 +95,7 @@ public class EnemyMovement : MonoBehaviour
                 _rb.AddForce(transform.right * _sidewaysSpeed * Time.deltaTime);
             }
         }
-        else 
+        else if (targetRotation == null || _rb.velocity == Vector3.zero)
         {
             // Since the targetRotation is null, move around until the player is found
             MoveForward();
@@ -107,10 +108,10 @@ public class EnemyMovement : MonoBehaviour
         }
 
         // If the enemy is touching the player, kill the player and all enemies
-        if (distanceToObjectHit < 70f && objectTag == "Player")
+        if (distanceToObjectHit < 100f && objectTag == "Player")
         {
             isPlayerDead = true;
-            GameObject gameOverCanvas = Instantiate(Resources.Load("Prefabs/GameOverPrefab"), new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1, LoadSceneMode.Single);
 
             // Destroy all enemies
             GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");

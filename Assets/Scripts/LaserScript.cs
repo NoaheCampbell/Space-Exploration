@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LaserScript : MonoBehaviour
 {
@@ -78,18 +79,10 @@ public class LaserScript : MonoBehaviour
         }
         else if (other.gameObject.tag == "Player")
         {
-            _parent.GetComponent<Rigidbody>().angularVelocity = new Vector3(0, 0, 0);
-            _parent.GetComponent<Rigidbody>().velocity = new Vector3(0, 0, 0);
 
-           GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            SceneManager.LoadScene("GameOverScene", LoadSceneMode.Single);
+            Resources.UnloadUnusedAssets();
 
-            foreach (GameObject enemy in enemies)
-            {
-                Destroy(enemy);
-            }
-
-            GameObject gameOverCanvas = Instantiate(Resources.Load("Prefabs/GameOverPrefab"), new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
-        
             Destroy(transform.gameObject);
         }
         else
