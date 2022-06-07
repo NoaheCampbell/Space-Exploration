@@ -352,14 +352,14 @@
 -r:"Library/Bee/artifacts/200b0aE.dag/Unity.VSCode.Editor.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/UnityEditor.UI.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/UnityEngine.UI.ref.dll"
-"Assets/Scripts/BackgroundScript.cs"
-"Assets/Scripts/CameraMovement.cs"
-"Assets/Scripts/EnemyMovement.cs"
-"Assets/Scripts/EnemyMovementPatterns.cs"
-"Assets/Scripts/EnemyScript.cs"
-"Assets/Scripts/LaserScript.cs"
-"Assets/Scripts/PlayAgainScript.cs"
-"Assets/Scripts/PlayerMovement.cs"
+"Assets/Resources/Scripts/BackgroundScript.cs"
+"Assets/Resources/Scripts/ButtonScript.cs"
+"Assets/Resources/Scripts/CameraMovement.cs"
+"Assets/Resources/Scripts/EnemyMovement.cs"
+"Assets/Resources/Scripts/EnemyMovementPatterns.cs"
+"Assets/Resources/Scripts/EnemyScript.cs"
+"Assets/Resources/Scripts/LaserScript.cs"
+"Assets/Resources/Scripts/PlayerMovement.cs"
 -langversion:9.0
 
 /deterministic
