@@ -9,45 +9,44 @@ public class EnemyMovement : MonoBehaviour
     public GameObject laserPrefab;
     private float _forwardSpeed;
     private float _sidewaysSpeed;
-    private float _backSpeed;
     private float _forwardSpeedCap;
     private float _rotationSpeed;
     private float _forwardForce;
     public bool _canShoot;
     public float shootTimer;
-    private Quaternion targetRotation;
-    private Vector3 direction;
-    private Vector3 targetPosition;
-    private float distanceToObjectHit;
+    private Quaternion _targetRotation;
+    private Vector3 _direction;
+    private Vector3 _targetPosition;
+    private float _distanceToObjectHit;
     private float _shootCooldown;
-    private string objectTag;
-    public bool isPlayerDead;
-
+    private string _objectTag;
+    public float timeSinceLastRaycastHit;
+    private Quaternion _previousTargetRotation;
 
     // Start is called before the first frame update
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
-        _forwardSpeedCap = 20000f;
+        _forwardSpeedCap = 2000f;
         _rotationSpeed = 500f;
         _forwardForce = 2000f;
         _canShoot = false;
         shootTimer = 10f;
         _forwardSpeed = 100f;
-        _shootCooldown = 1f;
-        isPlayerDead = false;
+        _shootCooldown = 5f;
+        timeSinceLastRaycastHit = 0f;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (shootTimer < 0)
+        if (shootTimer <= 0)
             _canShoot = true;
 
         Vector3 localVelocity = transform.InverseTransformDirection(_rb.velocity);
         _sidewaysSpeed = localVelocity.x;
 
-        // Creates 100 raycasts checking to see if the player is nearby
+        // Sends out raycasts checking to see if the player is nearby
         for (int i = 0; i < 200; i++)
         {
             RaycastHit hit;
@@ -55,38 +54,51 @@ public class EnemyMovement : MonoBehaviour
             bool hitSomething = Physics.Raycast(transform.position, rayDirection, out hit, 9000f);
 
             if (hitSomething)
-                objectTag = hit.transform.gameObject.tag;
+                _objectTag = hit.transform.gameObject.tag;
 
-            if (hitSomething && objectTag == "Player")
+            if (hitSomething && _objectTag == "Player")
             {
                 // If the raycast hits the player, rotate towards the ray's rotation
-                targetRotation = Quaternion.LookRotation(hit.point - transform.position);
+                _previousTargetRotation = _targetRotation;
+                _targetRotation = Quaternion.LookRotation(hit.point - transform.position);
 
                 // Gets the distance to the player and its position
-                distanceToObjectHit = Vector3.Distance(transform.position, hit.point);
-                targetPosition = hit.collider.gameObject.transform.position;
+                _distanceToObjectHit = Vector3.Distance(transform.position, hit.point);
+                _targetPosition = hit.collider.gameObject.transform.position;
             }
-            if (hitSomething && objectTag == "EnemyPrefab")
-            {
-                // If the enemy the raycast hit is within 150 units, move in another direction
-                if (distanceToObjectHit < 150f)
-                {
-                    targetPosition = hit.collider.gameObject.transform.position;
-                    targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
-                }
-            }
+
+            // Nonfunctional code
+            // if (hitSomething && _objectTag == "EnemyPrefab")
+            // {
+            //     // If the enemy the raycast hit is within 150 units, move in another _direction
+            //     if (_distanceToObjectHit < 150f)
+            //     {
+            //         _targetPosition = hit.collider.gameObject.transform.position;
+            //         _targetRotation = Quaternion.LookRotation(_targetPosition - transform.position);
+            //     }
+            // }
+
         }
 
-        // If the targetRotation is not null, rotate towards the targetRotation and move closer
-        if (targetRotation != null)
+        // If the _targetRotation is not null, rotate towards the _targetRotation and move closer
+        if (_targetRotation != null)
         {
+            if (_previousTargetRotation == _targetRotation)
+            {
+                timeSinceLastRaycastHit += Time.deltaTime;
+            }
+            else
+            {
+                timeSinceLastRaycastHit = 0f;
+            }
+
             // Now that the raycast revealed the player's position and distance, rotate and move towards the player
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, _forwardSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, _rotationSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, _targetPosition, _forwardSpeed * Time.deltaTime);
 
             // Determines if the player is facing the enemy using the dot product
-            direction = transform.forward;
-            float dot = Vector3.Dot(direction, targetPosition - transform.position);
+            _direction = transform.forward;
+            float dot = Vector3.Dot(_direction, _targetPosition - transform.position);
 
             // If the player is facing the enemy, turn to the side and move forward
             if (dot > .9)
@@ -94,31 +106,31 @@ public class EnemyMovement : MonoBehaviour
                 _rb.AddForce(transform.forward * _forwardSpeed * Time.deltaTime);
                 _rb.AddForce(transform.right * _sidewaysSpeed * Time.deltaTime);
             }
+
+            // If the time since the last raycast hit is greater than 1 second, move forward
+            if (timeSinceLastRaycastHit > 1f)
+            {
+                MoveForward();
+            }
         }
-        else if (targetRotation == null || _rb.velocity == Vector3.zero)
+        else
         {
-            // Since the targetRotation is null, move around until the player is found
+            // Since the _targetRotation is null, move around until the player is found
             MoveForward();
         }
 
         // If the enemy is close to the player, rotate towards them and shoot
-        if (distanceToObjectHit < 800f && _canShoot && !isPlayerDead)
+        if (_distanceToObjectHit < 800f && _canShoot)
         {
             Shoot();
+            _canShoot = false;
+            shootTimer = _shootCooldown;
         }
 
         // If the enemy is touching the player, kill the player and all enemies
-        if (distanceToObjectHit < 100f && objectTag == "Player")
+        if (_distanceToObjectHit < 100f && _objectTag == "Player")
         {
-            isPlayerDead = true;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1, LoadSceneMode.Single);
-
-            // Destroy all enemies
-            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-            foreach (GameObject enemy in enemies)
-            {
-                Destroy(enemy);
-            }
+            SceneManager.LoadScene("GameOverScene", LoadSceneMode.Single);
         }
 
         shootTimer -= Time.deltaTime;   
@@ -131,7 +143,6 @@ public class EnemyMovement : MonoBehaviour
         {
             _rb.AddForce(transform.forward * _forwardForce * Time.deltaTime);
             _forwardSpeed += _forwardForce * Time.deltaTime;
-            _backSpeed -= _forwardForce * Time.deltaTime;
         }
     }
 
@@ -139,8 +150,6 @@ public class EnemyMovement : MonoBehaviour
     {
         // Creates a laser in front of the enemy
         GameObject laser = Instantiate(laserPrefab, transform) as GameObject;
-        _canShoot = false;
-        shootTimer = _shootCooldown;
     }
     
 }
